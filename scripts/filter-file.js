@@ -10,8 +10,6 @@ function draft04(){
    // Specify the path to the 'schemas' directory
    const directoryPath = '../schemas/draft-04';
 
-
-
    // Read the files from the 'schemas' directory
 
    fs.readdirSync(directoryPath).forEach(file => {
@@ -46,51 +44,56 @@ function draft04(){
 
 
 
-function draft07(){
-   const Ajv = require("ajv");
+function validation(draft, startFileName, endFileName){
+
+   const Ajv = draft === 'draft04' ? require('ajv-draft-04') : require('ajv');
    const ajv = new Ajv();
 
    // Specify the path to the 'schemas' directory
    const directoryPath = '../schemas/draft-07';
 
-   // var json = globToRegExp("*.json");
 
-   // Read the files from the 'schemas' directory
+   const files = fs.readdirSync(directoryPath);
 
-   fs.readdirSync(directoryPath).forEach(file => {
-   // Construct the full path to the JSON schema file
-   const filePath = path.join(directoryPath, file);
+  // Filter files based on start and end file names
+  const filteredFiles = files.filter(file => {
+    return file >= startFileName && file <= endFileName;
+  });
 
-   try {
+
+     // Iterate through the filtered files
+  filteredFiles.forEach(file => {
+    // Construct the full path to the JSON schema file
+    const filePath = path.join(directoryPath, file);
+
+    try {
       // Read and parse the JSON schema
       const fileContent = fs.readFileSync(filePath, 'utf8');
       const obj = JSON.parse(fileContent);
-      
+
+      // Remove unnecessary definitions
       delete obj.definitions['http://json-schema.org/draft-04/schema'];
       delete obj.definitions['http://json-schema.org/draft-07/schema'];
-
 
       // Compile the schema
       const validate = ajv.validateSchema(obj);
 
       // Check if the schema is valid
-      //  const isSchemaValid = validate(schemaDocument);
-
       if (validate) {
-         console.log(`${file}: JSON Schema is valid!`);
+        console.log(`${file}: JSON Schema is valid!`);
       } else {
-         console.error(`${file}: JSON Schema is not valid:`, ajv.errors);
-         process.exit(1);
+        console.error(`${file}: JSON Schema is not valid:`, ajv.errors);
+        process.exit(1);
       }
-   } catch (error) {
+    } catch (error) {
       console.error(`${file}: Error reading or parsing JSON Schema:`, error.message);
-    //   draft04();
       process.exit(1);
-   }
-   });
-
+    }
+  });
 }
 
 
-draft04();
-draft07();
+
+validation('draft04', '1.0.0-without-$id.json', '1.2.0.json')
+// draft04();
+// draft07();
