@@ -1,3 +1,5 @@
+// This script is running successfully as of this version. I have segregated the json files based on the two different draft versions and then applying the script on those specific folders.
+
 const fs = require('fs');
 const path = require('path');
 
